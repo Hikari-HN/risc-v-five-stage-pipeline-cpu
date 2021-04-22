@@ -8,5 +8,5 @@ module adder #(
 );
 
     // add your adder logic here
-
+    assign y = a + b;
 endmodule

@@ -169,6 +169,20 @@ module Datapath #(
     always @(posedge clock)
     begin
         // add your logic here to update the EX_MEM_Register
+        RegC.RegWrite   <= RegB.RegWrite;
+        RegC.MemtoReg   <= RegB.MemtoReg;
+        RegC.MemRead    <= RegB.MemRead;
+        RegC.MemWrite   <= RegB.MemWrite;
+        RegC.RWSel      <= RegB.RWSel;
+        RegC.Pc_Imm     <= PCplusImm;
+        RegC.Pc_Four    <= PCplus4_EX;
+        RegC.Imm_Out    <= RegB.ImmG; // lui
+        RegC.Alu_Result <= ALU_result;
+        RegC.RD_Two     <= FB_mux_result;
+        RegC.rd         <= RegB.rd;
+        RegC.func3      <= RegB.func3;
+        RegC.func7      <= RegB.func7;
+        RegC.Curr_Instr <= RegB.Curr_Instr;
     end
 
 
@@ -177,6 +191,9 @@ module Datapath #(
     // ====================================================================================
 
     // add your data memory here.
+    logic [31:0] ReadData;
+    datamemory DM(.clock(clock), .read_en(RegC.MemRead), .write_en(RegC.MemWrite),
+     .address(RegC.Alu_Result[11:0]), .data_in(RegC.RD_Two), .funct3(RegC.func3), .data_out(ReadData));
 
     // ====================================================================================
     //                                End of Memory Access (MEM)
@@ -186,6 +203,16 @@ module Datapath #(
     always @(posedge clock)
     begin
         // add your logic here to update the MEM_WB_Register
+        RegD.RegWrite    <= RegC.RegWrite;
+        RegD.MemtoReg    <= RegC.MemtoReg;
+        RegD.RWSel       <= RegC.RWSel;
+        RegD.Pc_Imm      <= RegC.Pc_Imm;
+        RegD.Pc_Four     <= RegC.Pc_Four;
+        RegD.Imm_Out     <= RegC.Imm_Out;
+        RegD.Alu_Result  <= RegC.Alu_Result;
+        RegD.MemReadData <= ReadData;
+        RegD.rd          <= RegC.rd;
+        RegD.Curr_Instr  <= RegC.Curr_Instr;
     end
 
 

@@ -19,4 +19,22 @@ module Proc_controller(
     output logic [1:0] RWSel    //00：Register Write Back; 01: PC+4 write back(JAL/JALR); 10: imm-gen write back(LUI); 11: pc+imm-gen write back(AUIPC)
 );
 
+    logic [10:0] con;
+    always_comb
+    begin
+        con = 11'b0000000000;
+	    case (Opcode)
+		    7'b0110011: con = 11'b00100100000; // R-type
+		    7'b0110111: con = 11'b10100110010; // lui
+		    7'b1101111: con = 11'b10100111011; // jal
+		    7'b0010011: con = 11'b10100100000; // I-type1 (includes ori, andi)
+		    7'b0000011: con = 11'b11110000000; // I-type2 (includes lb, lh, lw, lbu, lhu)
+		    7'b1100111: con = 11'b10100101011; // I-type3 (jalr)	    
+		    7'b0100011: con = 11'b10001000000; // S-type1 (includes sb, sh, sw)	    
+		    7'b1100111: con = 11'b00000011000; // S-type2 (includes beq, bne, blt, bge, bltu, bgeu)    
+		    default:    con = 11'b00000000000;			
+	    endcase
+    end
+    assign {ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, ALUOp, Branch, JalrSel, RWSel} = con;
+
 endmodule

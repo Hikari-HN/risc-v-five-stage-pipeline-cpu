@@ -9,5 +9,6 @@ module Hazard_detector (
 );
 
     // define your hazard detection logic here
-
+    assign stall = id_ex_memread && ((id_ex_rd == if_id_rs1) || (id_ex_rd == if_id_rs2));
+    
 endmodule

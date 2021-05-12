@@ -13,6 +13,17 @@ module BranchUnit #(
     output logic [31:0]        branch_target,   // BrPC
     output logic               pc_sel
 );
-
+    
+    logic [31:0] pc = {23'b0, cur_pc};
+    always_comb
+    begin
+        pc_plus_4 = pc + 32'd4;
+        pc_plus_imm = pc + imm;
+        pc_sel = jalr_sel | (branch_taken & alu_result[0]);
+        if (jalr_sel == 1'b1)
+            branch_target = alu_result & 32'hfffffffe; // jalr
+        else
+            branch_target = pc + (imm << 1); // jal and beq
+    end
 
 endmodule

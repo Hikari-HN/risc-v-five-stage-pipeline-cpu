@@ -37,7 +37,7 @@ module Datapath #(
     //
     logic BrFlush, stall;
     logic [31:0] PC_mux_result, PC, PCplus4, BrPC, instr;
-    flipflop #(32) PC_unit(.clock(clock), .reset(BrFlush | reset), .d(PC_mux_result), .stall(stall), .q(PC));
+    flipflop #(32) PC_unit(.clock(clock), .reset(reset), .d(PC_mux_result), .stall(stall), .q(PC));
     mux2 PC_mux(.d0(PCplus4), .d1(BrPC), .s(BrFlush), .y(PC_mux_result));
     adder #(32) PC_adder(.a(PC), .b(32'd4), .y(PCplus4));
     //

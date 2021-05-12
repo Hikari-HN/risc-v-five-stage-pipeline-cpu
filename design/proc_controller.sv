@@ -21,8 +21,6 @@ module Proc_controller(
 
     logic [10:0] con;
     always_comb
-    begin
-        con = 11'b0000000000;
 	    case (Opcode)
 		    7'b0110011: con = 11'b00100100000; // R-type
 		    7'b0110111: con = 11'b10100110010; // lui
@@ -34,7 +32,6 @@ module Proc_controller(
 		    7'b1100111: con = 11'b00000011000; // S-type2 (includes beq, bne, blt, bge, bltu, bgeu)    
 		    default:    con = 11'b00000000000;			
 	    endcase
-    end
     assign {ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, ALUOp, Branch, JalrSel, RWSel} = con;
 
 endmodule

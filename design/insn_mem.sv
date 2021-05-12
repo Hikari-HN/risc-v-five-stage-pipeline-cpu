@@ -10,7 +10,7 @@ module Insn_mem #(
 );
 
     logic [INSN_WIDTH-1 :0] insn_array [(2**(ADDR_WIDTH - 2))-1:0];
-    
+
     initial begin
         $display("reading from insn.txt...");
         $readmemh("insn.txt", insn_array);

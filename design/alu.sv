@@ -12,10 +12,11 @@ module alu #(
 );
 
     // add your code here.
-    logic [31:0] s, signed_s;
-    logic signed [31:0] signed_operand_a = operand_a;
-    logic signed [31:0] signed_operand_b = operand_b;
-    assign signed_s = signed_operand_a - signed_operand_b;
+    logic [31:0] s;
+    logic signed [31:0] signed_s, signed_operand_a, signed_operand_b;
+    assign signed_operand_a = $signed(operand_a);
+    assign signed_operand_b = $signed(operand_b);
+    assign signed_s = $signed(signed_operand_a - signed_operand_b);
     assign s = operand_a - operand_b;
     assign zero = (s == 32'b0)? 1'b1 : 1'b0;
     always_comb
@@ -32,6 +33,7 @@ module alu #(
             4'b1001: alu_result = (operand_a < operand_b)? 32'b1 : 32'b0;                // bltu
             4'b1010: alu_result = (operand_a >= operand_b)? 32'b1 : 32'b0;               // bgeu
             4'b1011: alu_result = 32'b1;                                                 // jal
+            4'b1100: alu_result = operand_a ^ operand_b;                                 // xor
             default: alu_result = 32'b0;
         endcase
 

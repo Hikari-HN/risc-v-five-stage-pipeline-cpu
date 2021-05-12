@@ -25,7 +25,7 @@ module Proc_controller(
 		    7'b0110011: con = 11'b0_0_1_0_0_10_0_0_00; // R-type
 		    7'b0110111: con = 11'b0_0_1_0_0_00_0_0_10; // lui
 		    7'b1101111: con = 11'b1_0_1_0_0_11_1_0_01; // jal
-		    7'b0010011: con = 11'b1_0_1_0_0_10_0_0_00; // I-type1 (includes ori, andi)
+		    7'b0010011: con = 11'b1_0_1_0_0_10_0_0_00; // I-type1 (includes ori, andi, addi)
 		    7'b0000011: con = 11'b1_1_1_1_0_00_0_0_00; // I-type2 (includes lb, lh, lw, lbu, lhu)
 		    7'b1100111: con = 11'b1_0_1_0_0_10_1_1_01; // I-type3 (jalr)	    
 		    7'b0100011: con = 11'b1_0_0_0_1_00_0_0_00; // S-type1 (includes sb, sh, sw)	    

@@ -26,6 +26,7 @@ module ALU_Controller (
                     7'b0000000:
                         case (funct3)
                             3'b000:  operation = 4'b0000; // add
+                            3'b100:  operation = 4'b1100; // xor
                             3'b110:  operation = 4'b0010; // or
                             3'b111:  operation = 4'b0011; // and
                             3'b010:  operation = 4'b0100; // slt
@@ -34,6 +35,7 @@ module ALU_Controller (
                     7'b0100000:      operation = 4'b0001; // sub
                     default:
                         case (funct3)
+                            3'b000:  operation = 4'b0000; // addi
                             3'b110:  operation = 4'b0010; // ori
                             3'b111:  operation = 4'b0011; // andi
                             default: operation = 4'b0000;   

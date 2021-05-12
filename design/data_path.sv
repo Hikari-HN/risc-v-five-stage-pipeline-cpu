@@ -35,19 +35,37 @@ module Datapath #(
     //
     // peripheral logic here.
     //
-
+    logic BrFlush, stall;
+    logic [31:0] PC_mux_result, PC, PCplus4, BrPC, instr;
+    flipflop #(32) PC_unit(.clock(clock), .reset(BrFlush), .d(PC_mux_result), .stall(stall), .q(PC));
+    mux2 PC_mux(.d0(PCplus4), .d1(BrPC), .s(BrFlush), .y(PC_mux_result));
+    adder #(32) PC_adder(.a(PC), .b(32'd4), .y(PCplus4));
     //
     // add your instruction memory
     //
-
+    Insn_mem IM(.read_address(PC[PC_W - 1 : 0]), .insn(instr));
     // ====================================================================================
     //                             End of Instruction Fetch (IF)
     // ====================================================================================
 
+    if_id_reg RegA;
+    id_ex_reg RegB;
+    ex_mem_reg RegC;
+    mem_wb_reg RegD;
 
     always @(posedge clock)
     begin
         // add your logic here to update the IF_ID_Register
+        if (BrFlush)
+        begin
+            RegA.Curr_Pc    <= 9'b0;
+            RegA.Curr_Instr <= 32'b0;
+        end
+        else if (!stall)
+        begin
+            RegA.Curr_Pc    <= PC[PC_W - 1 : 0];
+            RegA.Curr_Instr <= instr;
+        end
     end
 
 
@@ -58,15 +76,20 @@ module Datapath #(
     //
     // peripheral logic here.
     //
-
+    assign opcode = RegA.Curr_Instr[6:0];
+    assign funct7 = RegA.Curr_Instr[31:25];
+    assign funct3 = RegA.Curr_Instr[14:12];
+    logic [31:0] WB_Data, rd1, rd2, ImmG;
     //
     // add your register file here.
     //
-
+    Reg_file RF(.clock(clock), .reset(reset), .write_en(RegD.RegWrite), .write_addr(RegD.rd),
+     .data_in(WB_Data), .read_addr1(RegA.Curr_Instr[19:15]),
+    .read_addr2(RegA.Curr_Instr[24:20]), .data_out1(rd1), .data_out2(rd2));
     //
     // add your immediate generator here
     //
-
+    Imm_gen Imm_Gen(.inst_code(RegA.Curr_Instr), .imm_out(ImmG));
     // ====================================================================================
     //                                End of Instruction Decoding (ID)
     // ====================================================================================
@@ -75,6 +98,50 @@ module Datapath #(
     always @(posedge clock)
     begin
         // add your logic here to update the ID_EX_Register
+        if (BrFlush)
+        begin
+            RegB.ALUSrc     <= 1'b0;
+            RegB.MemtoReg   <= 1'b0;
+            RegB.RegWrite   <= 1'b0; 
+            RegB.MemRead    <= 1'b0;
+            RegB.MemWrite   <= 1'b0;
+            RegB.ALUOp      <= 2'b0;
+            RegB.Branch     <= 1'b0;
+            RegB.JalrSel    <= 1'b0;
+            RegB.RWSel      <= 2'b0;
+            RegB.Curr_Pc    <= 9'b0;
+            RegB.RD_One     <= 32'b0;
+            RegB.RD_Two     <= 32'b0;
+            RegB.RS_One     <= 5'b0;
+            RegB.RS_Two     <= 5'b0;
+            RegB.rd         <= 5'b0;
+            RegB.ImmG       <= 32'b0;
+            RegB.func3      <= 3'b0;
+            RegB.func7      <= 7'b0;
+            RegB.Curr_Instr <= 32'b0;
+        end
+        else if (!stall)
+        begin
+            RegB.ALUSrc     <= alu_src;
+            RegB.MemtoReg   <= MemtoReg;
+            RegB.RegWrite   <= reg_write_en; 
+            RegB.MemRead    <= mem_read_en;
+            RegB.MemWrite   <= mem_write_en;
+            RegB.ALUOp      <= alu_op;
+            RegB.Branch     <= branch_taken;
+            RegB.JalrSel    <= jalr_sel;
+            RegB.RWSel      <= RWSel;
+            RegB.Curr_Pc    <= RegA.Curr_Pc;
+            RegB.RD_One     <= rd1;
+            RegB.RD_Two     <= rd2;
+            RegB.RS_One     <= RegA.Curr_Instr[19:15];
+            RegB.RS_Two     <= RegA.Curr_Instr[24:20];
+            RegB.rd         <= RegA.Curr_Instr[11:7];
+            RegB.ImmG       <= ImmG;
+            RegB.func3      <= funct3;
+            RegB.func7      <= funct7;
+            RegB.Curr_Instr <= RegA.Curr_Instr;
+        end
     end
 
 

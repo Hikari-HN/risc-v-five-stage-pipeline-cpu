@@ -223,7 +223,9 @@ module Datapath #(
     //
     // add your write back logic here.
     //
-
+    logic [31:0] res_mux_result;
+    mux2 res_mux(.d0(RegD.MemReadData), .d1(RegD.Alu_Result), .s(RegD.MemtoReg), .y(res_mux_result));
+    mux4 wrs_mux(.d00(res_mux_result), .d01(RegD.Pc_Four), .d10(RegD.Imm_Out), .d11(RegD.Pc_Imm), .s(RegD.RWSel), .y(WB_Data));
     // ====================================================================================
     //                               End of Write Back (WB)
     // ====================================================================================
@@ -236,12 +238,14 @@ module Datapath #(
     //
     // add your hazard detection logic here
     //
-
+    Hazard_detector hazard_unit(.if_id_rs1(RegA.Curr_Instr[19:15]), .if_id_rs2(RegA.Curr_Instr[24:20]),
+     .id_ex_rd(RegB.rd), .id_ex_memread(RegB.MemRead), .stall(stall));
     //
     // add your forwarding logic here
     //
-
-    //
+    ForwardingUnit forwarding_unit(.rs1(RegB.RS_One), .rs2(RegB.RS_Two), .ex_mem_rd(RegC.rd), .mem_wb_rd(RegD.rd),
+     .ex_mem_regwrite(RegC.RegWrite), .mem_wb_regwrite(RegD.RegWrite), .forward_a(ForwardA), .forward_b(ForwardB));
+    // 
     // possible extra code
     //
 

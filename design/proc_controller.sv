@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-//
+// 主控制器
 module Proc_controller(
 
     //Input
@@ -22,15 +22,15 @@ module Proc_controller(
     logic [10:0] con;
     always_comb
 	    case (Opcode)
-		    7'b0110011: con = 11'b00100100000; // R-type
-		    7'b0110111: con = 11'b10100110010; // lui
-		    7'b1101111: con = 11'b10100111011; // jal
-		    7'b0010011: con = 11'b10100100000; // I-type1 (includes ori, andi)
-		    7'b0000011: con = 11'b11110000000; // I-type2 (includes lb, lh, lw, lbu, lhu)
-		    7'b1100111: con = 11'b10100101011; // I-type3 (jalr)	    
-		    7'b0100011: con = 11'b10001000000; // S-type1 (includes sb, sh, sw)	    
-		    7'b1100111: con = 11'b00000011000; // S-type2 (includes beq, bne, blt, bge, bltu, bgeu)    
-		    default:    con = 11'b00000000000;			
+		    7'b0110011: con = 11'b0_0_1_0_0_10_0_0_00; // R-type
+		    7'b0110111: con = 11'b0_0_1_0_0_00_0_0_10; // lui
+		    7'b1101111: con = 11'b1_0_1_0_0_11_1_0_01; // jal
+		    7'b0010011: con = 11'b1_0_1_0_0_10_0_0_00; // I-type1 (includes ori, andi)
+		    7'b0000011: con = 11'b1_1_1_1_0_00_0_0_00; // I-type2 (includes lb, lh, lw, lbu, lhu)
+		    7'b1100111: con = 11'b1_0_1_0_0_10_1_1_01; // I-type3 (jalr)	    
+		    7'b0100011: con = 11'b1_0_0_0_1_00_0_0_00; // S-type1 (includes sb, sh, sw)	    
+		    7'b1100111: con = 11'b0_0_0_0_0_01_1_0_00; // S-type2 (includes beq, bne, blt, bge, bltu, bgeu)    
+		    default:    con = 11'b0_0_0_0_0_00_0_0_00;			
 	    endcase
     assign {ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, ALUOp, Branch, JalrSel, RWSel} = con;
 

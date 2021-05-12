@@ -39,7 +39,7 @@ module ALU_Controller (
                             default: operation = 4'b0000;   
                         endcase                        
                 endcase   
-            2'b11:                   operation = 4'b0000; // jal, jalr
+            2'b11:                   operation = 4'b1011; // jal
             default:                 operation = 4'b0000;
 	    endcase
 

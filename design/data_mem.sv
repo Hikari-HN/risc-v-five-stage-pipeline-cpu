@@ -21,7 +21,7 @@ module datamemory#(
                 3'b000:  MEM[address[ADDR_WIDTH - 1 : 2]][7:0]  <= data_in; // sb
                 3'b001:  MEM[address[ADDR_WIDTH - 1 : 2]][15:0] <= data_in; // sh
                 3'b010:  MEM[address[ADDR_WIDTH - 1 : 2]]       <= data_in; // sw
-                default: MEM[address[ADDR_WIDTH - 1 : 2]]       <= data_in;
+                default: MEM[address[ADDR_WIDTH - 1 : 2]]       <= data_in; // 默认sw
             endcase		
 	    if (read_en) // lw etc.
             case (funct3)
@@ -30,7 +30,7 @@ module datamemory#(
                 3'b010:  data_out <= MEM[address[ADDR_WIDTH - 1 : 2]]; // lw
                 3'b100:  data_out <= {24'b0,MEM[address[ADDR_WIDTH - 1 : 2]][7:0]}; // lbu
                 3'b101:  data_out <= {16'b0,MEM[address[ADDR_WIDTH - 1 : 2]][15:0]}; // lhu
-                default: data_out <= MEM[address[ADDR_WIDTH - 1 : 2]];
+                default: data_out <= MEM[address[ADDR_WIDTH - 1 : 2]]; // 默认lw
             endcase
     end
 

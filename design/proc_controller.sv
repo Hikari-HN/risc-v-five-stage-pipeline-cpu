@@ -29,7 +29,7 @@ module Proc_controller(
 		    7'b0000011: con = 11'b1_1_1_1_0_00_0_0_00; // I-type2 (includes lb, lh, lw, lbu, lhu)
 		    7'b1100111: con = 11'b1_0_1_0_0_10_1_1_01; // I-type3 (jalr)	    
 		    7'b0100011: con = 11'b1_0_0_0_1_00_0_0_00; // S-type1 (includes sb, sh, sw)	    
-		    7'b1100111: con = 11'b0_0_0_0_0_01_1_0_00; // S-type2 (includes beq, bne, blt, bge, bltu, bgeu)    
+		    7'b1100011: con = 11'b0_0_0_0_0_01_1_0_00; // S-type2 (includes beq, bne, blt, bge, bltu, bgeu)    
 		    default:    con = 11'b0_0_0_0_0_00_0_0_00;			
 	    endcase
     assign {ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, ALUOp, Branch, JalrSel, RWSel} = con;

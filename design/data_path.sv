@@ -65,6 +65,11 @@ module Datapath #(
             RegA.Curr_Pc    <= PC[PC_W - 1 : 0];
             RegA.Curr_Instr <= instr;
         end
+        /*else if (stall)
+        begin
+            RegA.Curr_Pc    <= RegA.Curr_Pc;
+            RegA.Curr_Instr <= RegA.Curr_Instr;
+        end*/
     end
     // ====================================================================================
     //                                Instruction Decoding (ID)
@@ -134,6 +139,28 @@ module Datapath #(
             RegB.func7      <= RegA.Curr_Instr[31:25];
             RegB.Curr_Instr <= RegA.Curr_Instr;
         end
+        /*else if (stall)
+        begin
+            RegB.ALUSrc     <= RegB.ALUSrc;
+            RegB.MemtoReg   <= RegB.MemtoReg;
+            RegB.RegWrite   <= RegB.RegWrite;
+            RegB.MemRead    <= RegB.MemRead;
+            RegB.MemWrite   <= RegB.MemWrite;
+            RegB.ALUOp      <= RegB.ALUOp;
+            RegB.Branch     <= RegB.Branch;
+            RegB.JalrSel    <= RegB.JalrSel;
+            RegB.RWSel      <= RegB.RWSel;
+            RegB.Curr_Pc    <= RegB.Curr_Pc;
+            RegB.RD_One     <= RegB.RD_One;
+            RegB.RD_Two     <= RegB.RD_Two;
+            RegB.RS_One     <= RegB.RS_One;
+            RegB.RS_Two     <= RegB.RS_Two;
+            RegB.rd         <= RegB.rd;
+            RegB.ImmG       <= RegB.ImmG;
+            RegB.func3      <= RegB.func3;
+            RegB.func7      <= RegB.func7;
+            RegB.Curr_Instr <= RegB.Curr_Instr;
+        end*/
     end
     // ====================================================================================
     //                                    Execution (EX)
@@ -141,21 +168,21 @@ module Datapath #(
     //
     // add your ALU, branch unit and with peripheral logic here
     //
-    logic [31:0] FA_mux_result, FB_mux_result, ALU_result, PCplusImm, PCplus4_EX, src_mux_result, lui_mux_result1, lui_mux_result2;
+    logic [31:0] FA_mux_result, FB_mux_result, ALU_result, PCplusImm, PCplus4_EX, src_mux_result, lui_mux_resultA, lui_mux_resultB;
     logic [1:0] ForwardA, ForwardB;
-    logic zero, if_lui;
+    logic zero, if_lui1, if_lui2;
     assign aluop_current = RegB.ALUOp;
     assign funct3 = RegB.func3;
     assign funct7 = RegB.func7;
-    assign if_lui = (RegB.Curr_Instr[6:0] == 7'b0110111)? 1'b1 : 1'b0;
+    assign if_lui = (RegC.Curr_Instr[6:0] == 7'b0110111)? 1'b1 : 1'b0;
     alu ALU(.operand_a(FA_mux_result), .operand_b(src_mux_result), .alu_ctrl(alu_cc), .alu_result(ALU_result), .zero(zero));
     BranchUnit Branch_unit(.cur_pc(RegB.Curr_Pc), .imm(RegB.ImmG), .jalr_sel(RegB.JalrSel), .branch_taken(RegB.Branch),
      .alu_result(ALU_result), .pc_plus_imm(PCplusImm), .pc_plus_4(PCplus4_EX), .branch_target(BrPC), .pc_sel(BrFlush));
-    mux4 FA_mux(.d00(RegB.RD_One), .d01(lui_mux_result1), .d10(lui_mux_result2), .d11(32'b0), .s(ForwardA), .y(FA_mux_result));
-    mux4 FB_mux(.d00(RegB.RD_Two), .d01(RegC.Alu_Result), .d10(wb_data), .d11(32'b0), .s(ForwardB), .y(FB_mux_result));
+    mux4 FA_mux(.d00(RegB.RD_One), .d01(lui_mux_resultA), .d10(wb_data), .d11(32'b0), .s(ForwardA), .y(FA_mux_result));
+    mux4 FB_mux(.d00(RegB.RD_Two), .d01(lui_mux_resultB), .d10(wb_data), .d11(32'b0), .s(ForwardB), .y(FB_mux_result));
     mux2 src_mux(.d0(FB_mux_result), .d1(RegB.ImmG), .s(RegB.ALUSrc), .y(src_mux_result));
-    mux2 lui_mux1(.d0(RegC.Alu_Result), .d1(RegD.Imm_Out), .s(if_lui), .y(lui_mux_result1));
-    mux2 lui_mux2(.d0(wb_data), .d1(RegC.Imm_Out), .s(if_lui), .y(lui_mux_result2));
+    mux2 lui_muxA(.d0(RegC.Alu_Result), .d1(RegC.Imm_Out), .s(if_lui), .y(lui_mux_resultA));
+    mux2 lui_muxB(.d0(RegC.Alu_Result), .d1(RegC.Imm_Out), .s(if_lui), .y(lui_mux_resultB));
     // ====================================================================================
     //                                End of Execution (EX)
     // ====================================================================================
@@ -255,7 +282,7 @@ module Datapath #(
     //
     // add your hazard detection logic here
     //
-    Hazard_detector hazard_unit(.if_id_rs1(RegA.Curr_Instr[19:15]), .if_id_rs2(RegA.Curr_Instr[24:20]),
+    Hazard_detector hazard_unit(.clock(clock), .reset(reset), .if_id_rs1(RegA.Curr_Instr[19:15]), .if_id_rs2(RegA.Curr_Instr[24:20]),
      .id_ex_rd(RegB.rd), .id_ex_memread(RegB.MemRead), .stall(stall));
     //
     // add your forwarding logic here

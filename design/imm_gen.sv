@@ -8,7 +8,7 @@ module Imm_gen(
     // add your immediate extension logic here.
     assign test = inst_code[6:0];
     always_comb
-        case(test)
+        case (test)
             7'b0010011: imm_out = {{20{inst_code[31]}}, inst_code[31:20]};                                                 // andi, ori
             7'b0000011: imm_out = {{20{inst_code[31]}}, inst_code[31:20]};                                                 // lw
             7'b0100011: imm_out = {{20{inst_code[31]}}, inst_code[31:25], inst_code[11:7]};                                // sw

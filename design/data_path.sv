@@ -141,18 +141,21 @@ module Datapath #(
     //
     // add your ALU, branch unit and with peripheral logic here
     //
-    logic [31:0] FA_mux_result, FB_mux_result, ALU_result, PCplusImm, PCplus4_EX, src_mux_result;
+    logic [31:0] FA_mux_result, FB_mux_result, ALU_result, PCplusImm, PCplus4_EX, src_mux_result, lui_mux_result1, lui_mux_result2;
     logic [1:0] ForwardA, ForwardB;
-    logic zero;
+    logic zero, if_lui;
     assign aluop_current = RegB.ALUOp;
     assign funct3 = RegB.func3;
     assign funct7 = RegB.func7;
+    assign if_lui = (RegB.Curr_Instr[6:0] == 7'b0110111)? 1'b1 : 1'b0;
     alu ALU(.operand_a(FA_mux_result), .operand_b(src_mux_result), .alu_ctrl(alu_cc), .alu_result(ALU_result), .zero(zero));
     BranchUnit Branch_unit(.cur_pc(RegB.Curr_Pc), .imm(RegB.ImmG), .jalr_sel(RegB.JalrSel), .branch_taken(RegB.Branch),
      .alu_result(ALU_result), .pc_plus_imm(PCplusImm), .pc_plus_4(PCplus4_EX), .branch_target(BrPC), .pc_sel(BrFlush));
-    mux4 FA_mux(.d00(RegB.RD_One), .d01(RegC.Alu_Result), .d10(wb_data), .d11(32'b0), .s(ForwardA), .y(FA_mux_result));
+    mux4 FA_mux(.d00(RegB.RD_One), .d01(lui_mux_result1), .d10(lui_mux_result2), .d11(32'b0), .s(ForwardA), .y(FA_mux_result));
     mux4 FB_mux(.d00(RegB.RD_Two), .d01(RegC.Alu_Result), .d10(wb_data), .d11(32'b0), .s(ForwardB), .y(FB_mux_result));
     mux2 src_mux(.d0(FB_mux_result), .d1(RegB.ImmG), .s(RegB.ALUSrc), .y(src_mux_result));
+    mux2 lui_mux1(.d0(RegC.Alu_Result), .d1(RegD.Imm_Out), .s(if_lui), .y(lui_mux_result1));
+    mux2 lui_mux2(.d0(wb_data), .d1(RegC.Imm_Out), .s(if_lui), .y(lui_mux_result2));
     // ====================================================================================
     //                                End of Execution (EX)
     // ====================================================================================

@@ -47,7 +47,6 @@ module Datapath #(
     // ====================================================================================
     //                             End of Instruction Fetch (IF)
     // ====================================================================================
-
     if_id_reg RegA;
     id_ex_reg RegB;
     ex_mem_reg RegC;
@@ -67,12 +66,9 @@ module Datapath #(
             RegA.Curr_Instr <= instr;
         end
     end
-
-
     // ====================================================================================
     //                                Instruction Decoding (ID)
     // ====================================================================================
-
     //
     // peripheral logic here.
     //
@@ -93,8 +89,6 @@ module Datapath #(
     // ====================================================================================
     //                                End of Instruction Decoding (ID)
     // ====================================================================================
-
-
     always @(posedge clock)
     begin
         // add your logic here to update the ID_EX_Register
@@ -143,12 +137,9 @@ module Datapath #(
             RegB.Curr_Instr <= RegA.Curr_Instr;
         end
     end
-
-
     // ====================================================================================
     //                                    Execution (EX)
     // ====================================================================================
-
     //
     // add your ALU, branch unit and with peripheral logic here
     //
@@ -164,8 +155,6 @@ module Datapath #(
     // ====================================================================================
     //                                End of Execution (EX)
     // ====================================================================================
-
-
     always @(posedge clock)
     begin
         // add your logic here to update the EX_MEM_Register
@@ -184,22 +173,16 @@ module Datapath #(
         RegC.func7      <= RegB.func7;
         RegC.Curr_Instr <= RegB.Curr_Instr;
     end
-
-
     // ====================================================================================
     //                                    Memory Access (MEM)
     // ====================================================================================
-
     // add your data memory here.
     logic [31:0] ReadData;
     datamemory DM(.clock(clock), .read_en(RegC.MemRead), .write_en(RegC.MemWrite),
      .address(RegC.Alu_Result[11:0]), .data_in(RegC.RD_Two), .funct3(RegC.func3), .data_out(ReadData));
-
     // ====================================================================================
     //                                End of Memory Access (MEM)
     // ====================================================================================
-
-
     always @(posedge clock)
     begin
         // add your logic here to update the MEM_WB_Register
@@ -214,12 +197,9 @@ module Datapath #(
         RegD.rd          <= RegC.rd;
         RegD.Curr_Instr  <= RegC.Curr_Instr;
     end
-
-
     // ====================================================================================
     //                                  Write Back (WB)
     // ====================================================================================
-
     //
     // add your write back logic here.
     //
@@ -229,12 +209,9 @@ module Datapath #(
     // ====================================================================================
     //                               End of Write Back (WB)
     // ====================================================================================
-
-
     // ====================================================================================
     //                                   other logic
     // ====================================================================================
-
     //
     // add your hazard detection logic here
     //

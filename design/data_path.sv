@@ -65,11 +65,6 @@ module Datapath #(
             RegA.Curr_Pc    <= PC[PC_W - 1 : 0];
             RegA.Curr_Instr <= instr;
         end
-        /*else if (stall)
-        begin
-            RegA.Curr_Pc    <= RegA.Curr_Pc;
-            RegA.Curr_Instr <= RegA.Curr_Instr;
-        end*/
     end
     // ====================================================================================
     //                                Instruction Decoding (ID)
@@ -139,28 +134,6 @@ module Datapath #(
             RegB.func7      <= RegA.Curr_Instr[31:25];
             RegB.Curr_Instr <= RegA.Curr_Instr;
         end
-        /*else if (stall)
-        begin
-            RegB.ALUSrc     <= RegB.ALUSrc;
-            RegB.MemtoReg   <= RegB.MemtoReg;
-            RegB.RegWrite   <= RegB.RegWrite;
-            RegB.MemRead    <= RegB.MemRead;
-            RegB.MemWrite   <= RegB.MemWrite;
-            RegB.ALUOp      <= RegB.ALUOp;
-            RegB.Branch     <= RegB.Branch;
-            RegB.JalrSel    <= RegB.JalrSel;
-            RegB.RWSel      <= RegB.RWSel;
-            RegB.Curr_Pc    <= RegB.Curr_Pc;
-            RegB.RD_One     <= RegB.RD_One;
-            RegB.RD_Two     <= RegB.RD_Two;
-            RegB.RS_One     <= RegB.RS_One;
-            RegB.RS_Two     <= RegB.RS_Two;
-            RegB.rd         <= RegB.rd;
-            RegB.ImmG       <= RegB.ImmG;
-            RegB.func3      <= RegB.func3;
-            RegB.func7      <= RegB.func7;
-            RegB.Curr_Instr <= RegB.Curr_Instr;
-        end*/
     end
     // ====================================================================================
     //                                    Execution (EX)

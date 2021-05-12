@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-//加法器
+// 加法器
 module adder #(
     parameter WIDTH = 8
 )(

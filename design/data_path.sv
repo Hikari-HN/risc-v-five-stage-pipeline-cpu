@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-//数据通路
+// 数据通路
 `include "pipeline_regs.sv"
 import Pipe_Buf_Reg_PKG::*;
 

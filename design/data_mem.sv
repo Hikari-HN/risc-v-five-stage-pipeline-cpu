@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-//数据存储器
+// 数据存储器
 module datamemory#(
     parameter ADDR_WIDTH = 12,
     parameter DATA_WIDTH = 32

@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-//指令存储器
+// 指令存储器
 module Insn_mem #(
     parameter ADDR_WIDTH = 9,
     parameter INSN_WIDTH = 32

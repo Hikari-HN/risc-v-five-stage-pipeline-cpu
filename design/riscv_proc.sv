@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-//risc-V控制信号
+// risc-V整体模块
 module riscv #(
     parameter DATA_W = 32)
     (input logic clock, reset, // clock and reset signals

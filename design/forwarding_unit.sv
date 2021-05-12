@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-//数据定向
+// 数据定向处理单元
 module ForwardingUnit (
     input  logic [4:0] rs1,
     input  logic [4:0] rs2,

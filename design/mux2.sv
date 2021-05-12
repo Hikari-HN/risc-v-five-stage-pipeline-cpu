@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-//二端口多路选择器
+// 二端口多路选择器
 module mux2 #(
     parameter WIDTH = 32
 )(

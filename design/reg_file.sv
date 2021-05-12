@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-//寄存器
+// 寄存器文件
 module Reg_file #(
     parameter DATA_WIDTH    = 32,  // number of bits in each register
     parameter ADDRESS_WIDTH = 5, //number of registers = 2^ADDRESS_WIDTH

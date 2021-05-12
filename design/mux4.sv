@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-//四端口多路选择器
+// 四端口多路选择器
 module mux4 #(
     parameter WIDTH = 32
 )(

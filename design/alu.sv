@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-//全加器
+// 算数逻辑单元
 module alu #(
     parameter DATA_WIDTH    = 32,
     parameter OPCODE_LENGTH = 4

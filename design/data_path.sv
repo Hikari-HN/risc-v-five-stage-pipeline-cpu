@@ -37,7 +37,7 @@ module Datapath #(
     //
     logic BrFlush, stall;
     logic [31:0] PC_mux_result, PC, PCplus4, BrPC, instr;
-    flipflop #(32) PC_unit(.clock(clock), .reset(BrFlush), .d(PC_mux_result), .stall(stall), .q(PC));
+    flipflop #(32) PC_unit(.clock(clock), .reset(BrFlush | reset), .d(PC_mux_result), .stall(stall), .q(PC));
     mux2 PC_mux(.d0(PCplus4), .d1(BrPC), .s(BrFlush), .y(PC_mux_result));
     adder #(32) PC_adder(.a(PC), .b(32'd4), .y(PCplus4));
     //
@@ -52,10 +52,10 @@ module Datapath #(
     ex_mem_reg RegC;
     mem_wb_reg RegD;
 
-    always @(posedge clock)
+    always @(posedge clock, posedge reset)
     begin
         // add your logic here to update the IF_ID_Register
-        if (BrFlush)
+        if (BrFlush | reset)
         begin
             RegA.Curr_Pc    <= 9'b0;
             RegA.Curr_Instr <= 32'b0;
@@ -73,14 +73,12 @@ module Datapath #(
     // peripheral logic here.
     //
     assign opcode = RegA.Curr_Instr[6:0];
-    assign funct7 = RegA.Curr_Instr[31:25];
-    assign funct3 = RegA.Curr_Instr[14:12];
-    logic [31:0] WB_Data, rd1, rd2, ImmG;
+    logic [31:0] rd1, rd2, ImmG;
     //
     // add your register file here.
     //
     Reg_file RF(.clock(clock), .reset(reset), .write_en(RegD.RegWrite), .write_addr(RegD.rd),
-     .data_in(WB_Data), .read_addr1(RegA.Curr_Instr[19:15]),
+     .data_in(wb_data), .read_addr1(RegA.Curr_Instr[19:15]),
     .read_addr2(RegA.Curr_Instr[24:20]), .data_out1(rd1), .data_out2(rd2));
     //
     // add your immediate generator here
@@ -89,10 +87,10 @@ module Datapath #(
     // ====================================================================================
     //                                End of Instruction Decoding (ID)
     // ====================================================================================
-    always @(posedge clock)
+    always @(posedge clock, posedge reset)
     begin
         // add your logic here to update the ID_EX_Register
-        if (BrFlush)
+        if (BrFlush | reset)
         begin
             RegB.ALUSrc     <= 1'b0;
             RegB.MemtoReg   <= 1'b0;
@@ -132,8 +130,8 @@ module Datapath #(
             RegB.RS_Two     <= RegA.Curr_Instr[24:20];
             RegB.rd         <= RegA.Curr_Instr[11:7];
             RegB.ImmG       <= ImmG;
-            RegB.func3      <= funct3;
-            RegB.func7      <= funct7;
+            RegB.func3      <= RegA.Curr_Instr[14:12];
+            RegB.func7      <= RegA.Curr_Instr[31:25];
             RegB.Curr_Instr <= RegA.Curr_Instr;
         end
     end
@@ -146,32 +144,55 @@ module Datapath #(
     logic [31:0] FA_mux_result, FB_mux_result, ALU_result, PCplusImm, PCplus4_EX, src_mux_result;
     logic [1:0] ForwardA, ForwardB;
     logic zero;
+    assign aluop_current = RegB.ALUOp;
+    assign funct3 = RegB.func3;
+    assign funct7 = RegB.func7;
     alu ALU(.operand_a(FA_mux_result), .operand_b(src_mux_result), .alu_ctrl(alu_cc), .alu_result(ALU_result), .zero(zero));
     BranchUnit Branch_unit(.cur_pc(RegB.Curr_Pc), .imm(RegB.ImmG), .jalr_sel(RegB.JalrSel), .branch_taken(RegB.Branch),
      .alu_result(ALU_result), .pc_plus_imm(PCplusImm), .pc_plus_4(PCplus4_EX), .branch_target(BrPC), .pc_sel(BrFlush));
-    mux4 FA_mux(.d00(RegB.RD_One), .d01(RegC.Alu_Result), .d10(WB_Data), .d11(32'b0), .s(ForwardA), .y(FA_mux_result));
-    mux4 FB_mux(.d00(RegB.RD_Two), .d01(RegC.Alu_Result), .d10(WB_Data), .d11(32'b0), .s(ForwardB), .y(FB_mux_result));
+    mux4 FA_mux(.d00(RegB.RD_One), .d01(RegC.Alu_Result), .d10(wb_data), .d11(32'b0), .s(ForwardA), .y(FA_mux_result));
+    mux4 FB_mux(.d00(RegB.RD_Two), .d01(RegC.Alu_Result), .d10(wb_data), .d11(32'b0), .s(ForwardB), .y(FB_mux_result));
     mux2 src_mux(.d0(FB_mux_result), .d1(RegB.ImmG), .s(RegB.ALUSrc), .y(src_mux_result));
     // ====================================================================================
     //                                End of Execution (EX)
     // ====================================================================================
-    always @(posedge clock)
+    always @(posedge clock, posedge reset)
     begin
         // add your logic here to update the EX_MEM_Register
-        RegC.RegWrite   <= RegB.RegWrite;
-        RegC.MemtoReg   <= RegB.MemtoReg;
-        RegC.MemRead    <= RegB.MemRead;
-        RegC.MemWrite   <= RegB.MemWrite;
-        RegC.RWSel      <= RegB.RWSel;
-        RegC.Pc_Imm     <= PCplusImm;
-        RegC.Pc_Four    <= PCplus4_EX;
-        RegC.Imm_Out    <= RegB.ImmG; // lui
-        RegC.Alu_Result <= ALU_result;
-        RegC.RD_Two     <= FB_mux_result;
-        RegC.rd         <= RegB.rd;
-        RegC.func3      <= RegB.func3;
-        RegC.func7      <= RegB.func7;
-        RegC.Curr_Instr <= RegB.Curr_Instr;
+        if(reset)
+        begin
+            RegC.RegWrite   <= 1'b0;
+            RegC.MemtoReg   <= 1'b0;
+            RegC.MemRead    <= 1'b0;
+            RegC.MemWrite   <= 1'b0;
+            RegC.RWSel      <= 2'b0;
+            RegC.Pc_Imm     <= 32'b0;
+            RegC.Pc_Four    <= 32'b0;
+            RegC.Imm_Out    <= 32'b0;
+            RegC.Alu_Result <= 32'b0;
+            RegC.RD_Two     <= 32'b0;
+            RegC.rd         <= 5'b0;
+            RegC.func3      <= 3'b0;
+            RegC.func7      <= 7'b0;
+            RegC.Curr_Instr <= 32'b0;
+        end
+        else
+        begin
+            RegC.RegWrite   <= RegB.RegWrite;
+            RegC.MemtoReg   <= RegB.MemtoReg;
+            RegC.MemRead    <= RegB.MemRead;
+            RegC.MemWrite   <= RegB.MemWrite;
+            RegC.RWSel      <= RegB.RWSel;
+            RegC.Pc_Imm     <= PCplusImm;
+            RegC.Pc_Four    <= PCplus4_EX;
+            RegC.Imm_Out    <= RegB.ImmG; // lui
+            RegC.Alu_Result <= ALU_result;
+            RegC.RD_Two     <= FB_mux_result;
+            RegC.rd         <= RegB.rd;
+            RegC.func3      <= RegB.func3;
+            RegC.func7      <= RegB.func7;
+            RegC.Curr_Instr <= RegB.Curr_Instr;
+        end
     end
     // ====================================================================================
     //                                    Memory Access (MEM)
@@ -186,16 +207,32 @@ module Datapath #(
     always @(posedge clock)
     begin
         // add your logic here to update the MEM_WB_Register
-        RegD.RegWrite    <= RegC.RegWrite;
-        RegD.MemtoReg    <= RegC.MemtoReg;
-        RegD.RWSel       <= RegC.RWSel;
-        RegD.Pc_Imm      <= RegC.Pc_Imm;
-        RegD.Pc_Four     <= RegC.Pc_Four;
-        RegD.Imm_Out     <= RegC.Imm_Out;
-        RegD.Alu_Result  <= RegC.Alu_Result;
-        RegD.MemReadData <= ReadData;
-        RegD.rd          <= RegC.rd;
-        RegD.Curr_Instr  <= RegC.Curr_Instr;
+        if(reset)
+        begin
+            RegD.RegWrite    <= 1'b0;
+            RegD.MemtoReg    <= 1'b0;
+            RegD.RWSel       <= 2'b0;
+            RegD.Pc_Imm      <= 32'b0;
+            RegD.Pc_Four     <= 32'b0;
+            RegD.Imm_Out     <= 32'b0;
+            RegD.Alu_Result  <= 32'b0;
+            RegD.MemReadData <= 32'b0;
+            RegD.rd          <= 5'b0;
+            RegD.Curr_Instr  <= 5'b0;
+        end
+        else
+        begin
+            RegD.RegWrite    <= RegC.RegWrite;
+            RegD.MemtoReg    <= RegC.MemtoReg;
+            RegD.RWSel       <= RegC.RWSel;
+            RegD.Pc_Imm      <= RegC.Pc_Imm;
+            RegD.Pc_Four     <= RegC.Pc_Four;
+            RegD.Imm_Out     <= RegC.Imm_Out;
+            RegD.Alu_Result  <= RegC.Alu_Result;
+            RegD.MemReadData <= ReadData;
+            RegD.rd          <= RegC.rd;
+            RegD.Curr_Instr  <= RegC.Curr_Instr;
+        end
     end
     // ====================================================================================
     //                                  Write Back (WB)
@@ -204,8 +241,8 @@ module Datapath #(
     // add your write back logic here.
     //
     logic [31:0] res_mux_result;
-    mux2 res_mux(.d0(RegD.MemReadData), .d1(RegD.Alu_Result), .s(RegD.MemtoReg), .y(res_mux_result));
-    mux4 wrs_mux(.d00(res_mux_result), .d01(RegD.Pc_Four), .d10(RegD.Imm_Out), .d11(RegD.Pc_Imm), .s(RegD.RWSel), .y(WB_Data));
+    mux2 res_mux(.d0(RegD.Alu_Result), .d1(RegD.MemReadData), .s(RegD.MemtoReg), .y(res_mux_result));
+    mux4 wrs_mux(.d00(res_mux_result), .d01(RegD.Pc_Four), .d10(RegD.Imm_Out), .d11(RegD.Pc_Imm), .s(RegD.RWSel), .y(wb_data));
     // ====================================================================================
     //                               End of Write Back (WB)
     // ====================================================================================

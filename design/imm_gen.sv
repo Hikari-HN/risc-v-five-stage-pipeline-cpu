@@ -6,6 +6,7 @@ module Imm_gen(
 );
 
     // add your immediate extension logic here.
+    logic [6:0] test;
     assign test = inst_code[6:0];
     always_comb
         case (test)
@@ -16,7 +17,7 @@ module Imm_gen(
             7'b1101111: imm_out = {{12{inst_code[31]}}, inst_code[31], inst_code[19:12], inst_code[20], inst_code[30:21]}; // jal
             7'b1100111: imm_out = {{20{inst_code[31]}}, inst_code[31:20]};                                                 // jalr
             7'b0110111: imm_out = {inst_code[31:12], 12'b0};                                                               // lui
-            default:    imm_out = 32'b0;           
+            default:    imm_out = 32'd0;           
         endcase
 
 endmodule

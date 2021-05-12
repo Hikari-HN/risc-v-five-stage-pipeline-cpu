@@ -12,7 +12,7 @@ module Hazard_detector (
 
     // define your hazard detection logic here
     logic [1:0] counter;
-    always @(posedge clock)
+    always @(negedge clock)
     begin 
         if (reset)
         begin

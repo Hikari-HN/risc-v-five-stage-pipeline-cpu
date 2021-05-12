@@ -95,7 +95,7 @@ module Datapath #(
     always @(posedge clock, posedge reset)
     begin
         // add your logic here to update the ID_EX_Register
-        if (BrFlush | reset)
+        if (BrFlush | reset | stall)
         begin
             RegB.ALUSrc     <= 1'b0;
             RegB.MemtoReg   <= 1'b0;

@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-//
+// 冒险探测器(阻塞生成器)
 module Hazard_detector (
     input  logic clock,
     input  logic reset,

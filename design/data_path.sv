@@ -141,21 +141,18 @@ module Datapath #(
     //
     // add your ALU, branch unit and with peripheral logic here
     //
-    logic [31:0] FA_mux_result, FB_mux_result, ALU_result, PCplusImm, PCplus4_EX, src_mux_result, lui_mux_resultA, lui_mux_resultB;
+    logic [31:0] FA_mux_result, FB_mux_result, ALU_result, PCplusImm, PCplus4_EX, src_mux_result, mem_data;
     logic [1:0] ForwardA, ForwardB;
-    logic zero, if_lui1, if_lui2;
+    logic zero;
     assign aluop_current = RegB.ALUOp;
     assign funct3 = RegB.func3;
     assign funct7 = RegB.func7;
-    assign if_lui = (RegC.Curr_Instr[6:0] == 7'b0110111)? 1'b1 : 1'b0;
     alu ALU(.operand_a(FA_mux_result), .operand_b(src_mux_result), .alu_ctrl(alu_cc), .alu_result(ALU_result), .zero(zero));
     BranchUnit Branch_unit(.cur_pc(RegB.Curr_Pc), .imm(RegB.ImmG), .jalr_sel(RegB.JalrSel), .branch_taken(RegB.Branch),
      .alu_result(ALU_result), .pc_plus_imm(PCplusImm), .pc_plus_4(PCplus4_EX), .branch_target(BrPC), .pc_sel(BrFlush));
-    mux4 FA_mux(.d00(RegB.RD_One), .d01(lui_mux_resultA), .d10(wb_data), .d11(32'b0), .s(ForwardA), .y(FA_mux_result));
-    mux4 FB_mux(.d00(RegB.RD_Two), .d01(lui_mux_resultB), .d10(wb_data), .d11(32'b0), .s(ForwardB), .y(FB_mux_result));
+    mux4 FA_mux(.d00(RegB.RD_One), .d01(mem_data), .d10(wb_data), .d11(32'b0), .s(ForwardA), .y(FA_mux_result));
+    mux4 FB_mux(.d00(RegB.RD_Two), .d01(mem_data), .d10(wb_data), .d11(32'b0), .s(ForwardB), .y(FB_mux_result));
     mux2 src_mux(.d0(FB_mux_result), .d1(RegB.ImmG), .s(RegB.ALUSrc), .y(src_mux_result));
-    mux2 lui_muxA(.d0(RegC.Alu_Result), .d1(RegC.Imm_Out), .s(if_lui), .y(lui_mux_resultA));
-    mux2 lui_muxB(.d0(RegC.Alu_Result), .d1(RegC.Imm_Out), .s(if_lui), .y(lui_mux_resultB));
     // ====================================================================================
     //                                End of Execution (EX)
     // ====================================================================================
@@ -204,6 +201,7 @@ module Datapath #(
     logic [31:0] ReadData;
     datamemory DM(.clock(clock), .read_en(RegC.MemRead), .write_en(RegC.MemWrite),
      .address(RegC.Alu_Result[11:0]), .data_in(RegC.RD_Two), .funct3(RegC.func3), .data_out(ReadData));
+    mux4 mem_mux(.d00(RegC.Alu_Result), .d01(RegC.Pc_Four), .d10(RegC.Imm_Out), .d11(RegC.Pc_Imm), .s(RegC.RWSel), .y(mem_data));
     // ====================================================================================
     //                                End of Memory Access (MEM)
     // ====================================================================================
